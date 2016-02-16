@@ -1,21 +1,25 @@
-/* Base Application Styles */
-body {
-  color: #fff;
-  background: #222;
+* {
+
+}
+.active-users {
+  background: #3b5998 ;
+  color: white;
+}
+.active-user {
+  margin-right: 10px;
+}
+.active-users .green-dot {
+  width: 8px;
+  height: 8px;
+  margin-right: 2px;
+  margin-left: 2px;
+  display: inline-block;
+  background-color: #2bb80e ;
+  border-radius: 50%;
 }
 
-.index img {
-  margin: 40px auto;
-  border-radius: 4px;
-  background: #fff;
-  display: block;
-}
-
-.index .notice {
-  margin: 20px auto;
-  padding: 15px 0;
-  text-align: center;
-  border: 1px solid #000;
-  border-width: 1px 0;
-  background: #666;
+.chat-log {
+  height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

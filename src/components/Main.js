@@ -1,102 +1,75 @@
 require('normalize.css');
 require('styles/App.css');
 
-
 import React from 'react';
 import ChatInput from './ChatInput';
 import ChatMessage from './ChatMessage';
 import ChatLog from './ChatLog';
-import User from './User';
 import ActiveUsers from './ActiveUsers';
-
+import API from '../API';
 
 
 var AppComponent = React.createClass({
-
   getInitialState: function () {
-
     return {
       activeUsers: [],
 
       messageLog: [],
 
-      isLoggedIn: true,
+      isLoggedIn: false,
 
       currentUser: {
-        fb_id: "1307233471",
-        first_name: "Vlad",
-        last_name: "Goran"
+        fb_id: '13072334712',
+        first_name: 'Pamela',
+        last_name: 'McFiesty'
       }
     }
   },
 
 
   fetchUsers: function () {
-    var url = 'http://server.godev.ro:8081/api/participants';
-    fetch(url).then(function(response) {
-      return response.json()
-    }).then(function(json) {
-      this.setState({
-        activeUsers: json
-      });
-    }.bind(this));
-  },
-
-  fetchUser: function () {
-    var url = "http://server.godev.ro:8081/api/participants";
-    return fetch(url,
-      {
-        method: 'post',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fb_id: "1307233471",
-          first_name: "Vlad",
-          last_name: "Goran"
-        })
-      }
-    )
-      .then(function(response) {
-        return response.json();
-
-      }).then(function(json) {
+    API.fetchUsers()
+      .then(function (json) {
         this.setState({
-          currentUser: json
+          activeUsers: json
         });
       }.bind(this));
   },
 
+  fetchUser: function () {
+    return API.fetchUser(this.state.currentUser)
+      .then(function (json) {
+        this.setState({currentUser: json});
+      }.bind(this));
+  },
+
   fetchMessages: function () {
-    console.log('getting messages', this.state.currentUser);
-    var url = 'http://server.godev.ro:8081/api/messages/' + this.state.currentUser.id;
-    fetch(url).then(function(response) {
-      console.log('response',response);
-      return response.json()
-    }).then(function(json) {
-      this.setState({
-        messageLog: json
-      });
-    }.bind(this));
+    API.fetchMessages(this.state.currentUser)
+      .then(function (log) {
+        this.setState({
+          messageLog: log
+        });
+      }.bind(this));
   },
 
   componentWillMount: function () {
-
     this.fetchUsers();
-    setInterval(this.fetchUsers, 3000000);
+    setInterval(this.fetchUsers, 3000);
 
     this.fetchUser().then(function () {
       this.fetchMessages();
-      setInterval(this.fetchMessages, 200000000);
+      setInterval(this.fetchMessages, 2000);
     }.bind(this));
   },
 
   onSubmit: function (body) {
-    // call API...
+    API.sendMessage(body, this.state.currentUser)
+      .then(function (json) {
+        console.log(json);
+      }.bind(this));
   },
 
-  render: function () {
+  renderChat: function () {
     var currentUser = this.state.currentUser;
     var chatMessages = this.state.messageLog.map(function (message) {
       var alignRight = (currentUser.fb_id === message.participant.fb_id);
@@ -110,14 +83,30 @@ var AppComponent = React.createClass({
         alignRight={alignRight}
       />)
     });
-
     return (
-      <div className="app">
+      <div className="chat-view">
         <ActiveUsers list={this.state.activeUsers}/>
         <ChatLog>
           {chatMessages}
         </ChatLog>
         <ChatInput onSubmit={this.onSubmit}/>
+      </div>
+    );
+  },
+
+  renderLogin: function (){
+
+  return (
+    <div className="login-view">
+        <a href="#">Login with facebook!</a>
+    </div>
+  );
+},
+
+  render: function (){
+    return (
+      <div className="app">
+        {this.state.isLoggedIn ? this.renderChat() : this.renderLogin()}
       </div>
     );
   }
